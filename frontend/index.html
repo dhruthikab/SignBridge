@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>SignBridge | ISL Translator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1120;
+      --panel: #131e31;
+      --panel-2: #0e1728;
+      --border: #293951;
+      --text: #eef4ff;
+      --muted: #9dafc8;
+      --blue: #6aa8ff;
+      --blue-strong: #3478ed;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --red: #fb7185;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(ellipse at 15% 0%, #1b3152 0, transparent 42%), var(--bg);
+    }
+    header {
+      padding: 22px max(22px, calc((100% - 1120px) / 2));
+      border-bottom: 1px solid rgba(157, 175, 200, .18);
+      background: rgba(12, 21, 37, .82);
+    }
+    .brand-row { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      width: 46px; height: 46px; display: grid; place-items: center;
+      border-radius: 14px; background: linear-gradient(135deg, #60a5fa, #2563eb);
+      color: white; font-size: 24px; box-shadow: 0 8px 28px #2563eb44;
+    }
+    header h1 { margin: 0; font-size: clamp(24px, 4vw, 31px); letter-spacing: -.7px; }
+    header p { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+    main { width: min(1120px, calc(100% - 36px)); margin: 34px auto 44px; }
+    .intro { margin-bottom: 24px; }
+    .eyebrow { color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: 1.7px; text-transform: uppercase; }
+    .intro h2 { margin: 9px 0 8px; font-size: clamp(25px, 4vw, 34px); letter-spacing: -.8px; }
+    .intro p { max-width: 760px; margin: 0; color: var(--muted); line-height: 1.7; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 22px; align-items: start; }
+    .card { min-width: 0; padding: 23px; background: linear-gradient(180deg, #17243a, #111c2e); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 18px 55px #0000001c; }
+    .card-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 17px; }
+    .card h3 { margin: 0; font-size: 18px; }
+    .pill { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+    .camera-stage { position: relative; overflow: hidden; min-height: 280px; display: grid; place-items: center; background: #070d18; border: 1px solid #2c3a50; border-radius: 14px; }
+    .camera-box { min-height: 280px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 25px; color: var(--muted); }
+    .camera-icon { font-size: 44px; margin-bottom: 10px; }
+    .camera-box p { margin: 5px 0; }
+    video { display: none; width: 100%; max-height: 460px; object-fit: cover; transform: scaleX(-1); }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    button { appearance: none; border: 1px solid transparent; border-radius: 10px; padding: 12px 16px; font: inherit; font-size: 14px; font-weight: 750; cursor: pointer; transition: transform .15s ease, filter .15s ease, border-color .15s ease; }
+    button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 3px; }
+    button:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+    .primary { background: linear-gradient(135deg, #438df7, #2868db); color: white; box-shadow: 0 6px 20px #2563eb2b; }
+    .secondary { color: #e5edf9; background: #26354b; border-color: #3b4b63; }
+    .status { display: flex; align-items: flex-start; gap: 9px; margin: 15px 0 0; color: var(--yellow); font-size: 13px; line-height: 1.5; }
+    .status::before { content: ""; flex: 0 0 7px; height: 7px; margin-top: 5px; border-radius: 50%; background: currentColor; }
+    .result { padding: 17px; margin: 13px 0; background: var(--panel-2); border: 1px solid #24344a; border-radius: 12px; }
+    .label { margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 750; letter-spacing: .6px; text-transform: uppercase; }
+    .value { min-height: 29px; color: var(--blue); font-size: clamp(20px, 3vw, 25px); font-weight: 800; overflow-wrap: anywhere; }
+    .result-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+    .note { color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .system-card { margin-top: 22px; }
+    .system-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .system-item { padding: 14px; background: #0e1728; border: 1px solid #24344a; border-radius: 11px; }
+    .system-item strong { display: block; font-size: 13px; margin-bottom: 6px; }
+    .system-item span { color: var(--yellow); font-size: 12px; }
+    footer { padding: 22px; text-align: center; color: #8294ae; font-size: 12px; border-top: 1px solid #223047; }
+    @media (max-width: 760px) {
+      header { padding: 19px 20px; }
+      main { width: min(100% - 26px, 600px); margin-top: 26px; }
+      .layout { grid-template-columns: 1fr; }
+      .card { padding: 18px; }
+      .camera-stage, .camera-box { min-height: 235px; }
+      .system-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-row">
+      <div class="brand-mark" aria-hidden="true">🤟</div>
+      <div>
+        <h1>SignBridge</h1>
+        <p>Indian Sign Language to Text &amp; Speech Translator</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div class="eyebrow">Accessible communication prototype</div>
+      <h2>Sign. Recognize. Communicate.</h2>
+      <p>Show a supported sign to the camera and SignBridge will use its trained model to display the predicted label and read the translated text aloud.</p>
+    </section>
+
+    <section class="layout" aria-label="Sign recognition workspace">
+      <div class="card">
+        <div class="card-heading">
+          <h3>Live Camera</h3>
+          <span class="pill"><span class="dot" id="cameraDot"></span><span id="cameraPill">Camera off</span></span>
+        </div>
+        <div class="camera-stage">
+          <div class="camera-box" id="cameraPlaceholder">
+            <div class="camera-icon" aria-hidden="true">📷</div>
+            <p><strong>Camera preview will appear here</strong></p>
+            <p class="note">Allow camera access when your browser asks.</p>
+          </div>
+          <video id="video" autoplay muted playsinline></video>
+        </div>
+        <div class="controls">
+          <button class="primary" id="startCamera" type="button">Start Camera</button>
+          <button class="secondary" id="stopCamera" type="button" disabled>Stop Camera</button>
+        </div>
+        <p class="status" id="cameraStatus" role="status" aria-live="polite">Camera not started.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-heading">
+          <h3>Recognition Results</h3>
+          <span class="pill">AI prototype</span>
+        </div>
+        <div class="result">
+          <div class="label">Predicted Sign</div>
+          <div class="value" id="predictedSign">--</div>
+        </div>
+        <div class="result">
+          <div class="label">Translated Text</div>
+          <div class="value" id="translatedText">--</div>
+        </div>
+        <div class="result">
+          <div class="label">Speech Output</div>
+          <div class="value" id="speechStatus">Ready</div>
+        </div>
+        <div class="result-actions">
+          <button class="primary" id="recognizeButton" type="button" disabled>Recognize Sign</button>
+          <button class="secondary" id="speakAgainButton" type="button" disabled>Speak Again</button>
+        </div>
+        <div class="result-actions">
+          <button class="secondary" id="helloButton" type="button">Demo: HELLO</button>
+          <button class="secondary" id="byeButton" type="button">Demo: BYE-BYE</button>
+        </div>
+        <p class="note">Demo buttons show sample results. Live recognition uses your camera and Python machine-learning model, currently trained to recognize seven signs: HELLO, BYE-BYE, THANK YOU, WELCOME, SORRY, GOOD MORNING, and PLEASE. This is a prototype, not a complete Indian Sign Language (ISL) translator.</p>
+      </div>
+    </section>
+
+    <section class="card system-card">
+      <div class="card-heading"><h3>System Status</h3><span class="pill">Local prototype</span></div>
+      <div class="system-grid">
+        <div class="system-item"><strong>Website</strong><span style="color:var(--green)">Loaded</span></div>
+        <div class="system-item"><strong>Python AI service</strong><span id="pythonStatus">Checking connection…</span></div>
+        <div class="system-item"><strong>Hand detector</strong><span id="detectorStatus">Loading model…</span></div>
+      </div>
+      <p class="note">Keep your Spring Boot server (port 8080) and Python AI server (port 5000) running while demonstrating the project.</p>
+    </section>
+  </main>
+
+  <footer>SignBridge · Final Year Project · ISL Recognition Prototype</footer>
+
+  <script type="module">
+    import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+    const PYTHON_API = "http://127.0.0.1:5000";
+    const MODEL_URL = `${PYTHON_API}/models/hand_landmarker.task`;
+    const video = document.getElementById("video");
+    const placeholder = document.getElementById("cameraPlaceholder");
+    const cameraStatus = document.getElementById("cameraStatus");
+    const cameraPill = document.getElementById("cameraPill");
+    const cameraDot = document.getElementById("cameraDot");
+    const predictionStatus = document.getElementById("speechStatus");
+    const predictedSign = document.getElementById("predictedSign");
+    const translatedText = document.getElementById("translatedText");
+    const pythonStatus = document.getElementById("pythonStatus");
+    const detectorStatus = document.getElementById("detectorStatus");
+    const startButton = document.getElementById("startCamera");
+    const stopButton = document.getElementById("stopCamera");
+    const recognizeButton = document.getElementById("recognizeButton");
+    const speakAgainButton = document.getElementById("speakAgainButton");
+
+    let cameraStream = null;
+    let handLandmarker = null;
+    let latestLandmarks = null;
+    let latestLandmarkVideoTime = -1;
+    let lastDetectedVideoTime = -1;
+    let isCollecting = false;
+    let lastSpokenText = "";
+    let animationStarted = false;
+
+    function setCameraMessage(message, color = "var(--yellow)") {
+      cameraStatus.textContent = message;
+      cameraStatus.style.color = color;
+    }
+
+    function setCameraPill(message, color) {
+      cameraPill.textContent = message;
+      cameraDot.style.background = color;
+    }
+
+    async function initializeHandDetector() {
+      detectorStatus.textContent = "Loading model…";
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+        );
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: { modelAssetPath: MODEL_URL, delegate: "CPU" },
+          runningMode: "VIDEO",
+          numHands: 1
+        });
+        detectorStatus.textContent = "Ready";
+        detectorStatus.style.color = "var(--green)";
+        console.info("SignBridge hand detector initialized.");
+        recognizeButton.disabled = !cameraStream;
+      } catch (error) {
+        detectorStatus.textContent = "Could not load";
+        detectorStatus.style.color = "var(--red)";
+        console.error("MediaPipe initialization failed:", error);
+        setCameraMessage("AI hand detector failed to load. Check the Python server and model URL.", "var(--red)");
+      }
+    }
+
+    async function checkPythonService() {
+      try {
+        const response = await fetch(`${PYTHON_API}/api/health`);
+        if (!response.ok) throw new Error("Health check failed");
+        const data = await response.json();
+        pythonStatus.textContent = data.status || "Connected";
+        pythonStatus.style.color = "var(--green)";
+      } catch (error) {
+        pythonStatus.textContent = "Not connected";
+        pythonStatus.style.color = "var(--red)";
+        console.warn("Python API connection failed:", error);
+      }
+    }
+
+    async function startCamera() {
+      if (cameraStream) return;
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraMessage("Camera access is unavailable. Open this page in a supported browser.", "var(--red)");
+        return;
+      }
+      startButton.disabled = true;
+      setCameraMessage("Requesting camera permission…");
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+          audio: false
+        });
+        video.srcObject = cameraStream;
+        video.style.display = "block";
+        placeholder.style.display = "none";
+        await video.play();
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        recognizeButton.disabled = !handLandmarker;
+        setCameraPill("Camera on", "var(--green)");
+        setCameraMessage("Camera is running. Show one hand clearly to the camera.", "var(--green)");
+        if (!animationStarted) {
+          animationStarted = true;
+          requestAnimationFrame(detectHandFrame);
+        }
+      } catch (error) {
+        console.error("Camera start failed:", error);
+        cameraStream = null;
+        startButton.disabled = false;
+        setCameraPill("Camera off", "var(--yellow)");
+        const message = error.name === "NotAllowedError"
+          ? "Camera permission was denied. Allow camera access in your browser and try again."
+          : error.name === "NotFoundError"
+            ? "No camera was found on this device."
+            : `Could not start camera: ${error.message}`;
+        setCameraMessage(message, "var(--red)");
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+      video.pause();
+      video.srcObject = null;
+      video.style.display = "none";
+      placeholder.style.display = "flex";
+      latestLandmarks = null;
+      latestLandmarkVideoTime = -1;
+      lastDetectedVideoTime = -1;
+      isCollecting = false;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      recognizeButton.disabled = true;
+      setCameraPill("Camera off", "var(--yellow)");
+      setCameraMessage("Camera stopped.");
+    }
+
+    function detectHandFrame() {
+      if (cameraStream && handLandmarker && video.readyState >= 2 && video.currentTime !== lastDetectedVideoTime) {
+        lastDetectedVideoTime = video.currentTime;
+        try {
+          const result = handLandmarker.detectForVideo(video, performance.now());
+          if (result.landmarks && result.landmarks.length > 0) {
+            latestLandmarks = result.landmarks[0].flatMap(point => [point.x, point.y, point.z]);
+            latestLandmarkVideoTime = video.currentTime;
+            setCameraMessage("Hand detected — tracking.", "var(--green)");
+          } else {
+            latestLandmarks = null;
+            latestLandmarkVideoTime = video.currentTime;
+            setCameraMessage("Show your hand to the camera.");
+          }
+        } catch (error) {
+          console.error("Hand detection error:", error);
+          setCameraMessage("Hand detection error. Check the browser console.", "var(--red)");
+        }
+      }
+      requestAnimationFrame(detectHandFrame);
+    }
+
+    async function predictCollectedFrames(frames) {
+      predictionStatus.textContent = "Recognizing sign…";
+      try {
+        const response = await fetch(`${PYTHON_API}/api/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ frames })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Prediction failed (${response.status})`);
+        predictedSign.textContent = data.prediction ?? "Unknown";
+        translatedText.textContent = data.text ?? data.prediction ?? "";
+        lastSpokenText = data.text ?? data.prediction ?? "";
+        speakText(lastSpokenText);
+        predictionStatus.textContent = `Prediction complete (${data.score ?? "—"}%).`;
+      } catch (error) {
+        predictionStatus.textContent = `Prediction failed: ${error.message}`;
+        console.error("SignBridge prediction error:", error);
+      }
+    }
+
+    function speakText(text) {
+      speakAgainButton.disabled = !text;
+      if (!("speechSynthesis" in window) || !text) {
+        predictionStatus.textContent = "Text is ready; speech is not supported in this browser.";
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-IN";
+      utterance.rate = 0.9;
+      utterance.onstart = () => { predictionStatus.textContent = "Speaking…"; };
+      utterance.onend = () => { predictionStatus.textContent = "Speech completed"; };
+      utterance.onerror = event => {
+        predictionStatus.textContent = `Speech unavailable${event.error ? `: ${event.error}` : "."}`;
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    async function startSignRecognition() {
+      if (!cameraStream) {
+        predictionStatus.textContent = "Start the camera first.";
+        return;
+      }
+      if (!handLandmarker) {
+        predictionStatus.textContent = "AI detector is not ready yet.";
+        return;
+      }
+      if (isCollecting) return;
+      isCollecting = true;
+      recognizeButton.disabled = true;
+      const frames = [];
+      let lastCollectedTime = -1;
+      const deadline = performance.now() + 12000;
+      predictionStatus.textContent = "Show your sign — collecting frames…";
+      try {
+        while (frames.length < 30 && isCollecting && performance.now() < deadline) {
+          if (
+            latestLandmarks && latestLandmarks.length === 63 &&
+            latestLandmarkVideoTime !== lastCollectedTime
+          ) {
+            frames.push([...latestLandmarks]);
+            lastCollectedTime = latestLandmarkVideoTime;
+            predictionStatus.textContent = `Collecting frames: ${frames.length}/30`;
+          }
+          await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+        if (!isCollecting) return;
+        if (frames.length === 30) {
+          await predictCollectedFrames(frames);
+        } else {
+          predictionStatus.textContent = `Only collected ${frames.length}/30 frames. Keep your hand visible and try again.`;
+        }
+      } catch (error) {
+        predictionStatus.textContent = `Recognition error: ${error.message}`;
+        console.error("Recognition error:", error);
+      } finally {
+        isCollecting = false;
+        recognizeButton.disabled = !cameraStream || !handLandmarker;
+      }
+    }
+
+    function showDemo(sign, text) {
+      predictedSign.textContent = sign;
+      translatedText.textContent = text;
+      lastSpokenText = text;
+      predictionStatus.textContent = "Demo result ready";
+      speakText(text);
+    }
+
+    startButton.addEventListener("click", startCamera);
+    stopButton.addEventListener("click", stopCamera);
+    recognizeButton.addEventListener("click", startSignRecognition);
+    speakAgainButton.addEventListener("click", () => speakText(lastSpokenText));
+    document.getElementById("helloButton").addEventListener("click", () => showDemo("HELLO", "Hello!"));
+    document.getElementById("byeButton").addEventListener("click", () => showDemo("BYE-BYE", "Bye bye!"));
+
+    speakAgainButton.disabled = true;
+
+    checkPythonService();
+    initializeHandDetector();
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+﻿ml/venv/
+**/__pycache__/
+*.pyc
+backend/target/
+.idea/
+.vscode/
+.DS_Store
+
+# Model backups
+ml/models/*_before_*.joblib
